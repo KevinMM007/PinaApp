@@ -1,0 +1,32 @@
+name: pina_app
+description: Aplicación para conectar productores y compradores de piña.
+
+# Define la versión mínima de Dart y Flutter
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.2
+  
+  # Firebase - versiones compatibles
+  firebase_core: ^2.24.2
+  firebase_auth: ^4.15.3
+  cloud_firestore: ^4.13.6
+  
+  # Gestión de estado
+  provider: ^6.1.1
+  
+  # Utilidades
+  intl: ^0.18.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
+  # Aquí irían tus assets, fuentes, etc.

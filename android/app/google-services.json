@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "389822745943",
+    "project_id": "pinaapp-f6eca",
+    "storage_bucket": "pinaapp-f6eca.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:389822745943:android:ca7a986707b68800418212",
+        "android_client_info": {
+          "package_name": "com.example.pina_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDmsdKhWIn2l8E6hFVumVMh25MjkyPxXfM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
