@@ -9,8 +9,8 @@ plugins {
 
 android {
     namespace = "com.example.pina_app"
-    compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    compileSdk = 35  // Version mas actual 
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -18,20 +18,16 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+        jvmTarget = "11"
     }
 
     defaultConfig {
-    applicationId = "com.example.pina_app"
-    // Añade esta línea para deshabilitar el NDK
-    ndkVersion = null
-    // You can update the following values to match your application needs.
-    // For more information, see: https://developer.android.com/studio/build/application-id.html
-    minSdk = flutter.minSdkVersion
-    targetSdk = flutter.targetSdkVersion
-    versionCode = flutter.versionCode
-    versionName = flutter.versionName
-}
+        applicationId = "com.example.pina_app"
+        minSdk = 23
+        targetSdk = 34  // Usa un valor específico
+        versionCode = 1
+        versionName = "1.0"
+    }
 
     buildTypes {
         release {
