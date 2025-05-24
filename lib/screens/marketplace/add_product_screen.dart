@@ -4,6 +4,7 @@ import 'package:pina_app/config/constants.dart';
 import 'package:pina_app/models/producto.dart';
 import 'package:pina_app/providers/auth_provider.dart';
 import 'package:pina_app/providers/product_provider.dart';
+import 'package:pina_app/utils/validators.dart';
 import 'package:pina_app/widgets/common/custom_button.dart';
 import 'package:pina_app/widgets/common/custom_text_field.dart';
 
@@ -29,10 +30,17 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final List<String> _calidades = ['Premium', 'Estándar', 'Segunda'];
   final List<String> _unidades = ['kg', 'tonelada', 'pieza'];
   
-  // Lista simple para fotos (normalmente se usaría un servicio de storage)
-  final List<String> _fotos = [
-    'https://firebasestorage.googleapis.com/v0/b/pina-app-sample.appspot.com/o/pina_sample.jpg?alt=media',
-  ];
+  // Lista dinámica para fotos
+  final List<String> _fotos = [];
+
+  /// Método helper para manejar imágenes placeholder
+  List<String> _getPhotosForProduct() {
+    if (_fotos.isEmpty) {
+      // Usar una imagen placeholder válida
+      return ['https://via.placeholder.com/400x300/4CAF50/FFFFFF?text=Piña'];
+    }
+    return _fotos;
+  }
 
   @override
   void dispose() {
@@ -58,7 +66,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
         unidadPrecio: _unidadPrecio,
         cantidadDisponible: double.parse(_cantidadController.text),
         calidad: _calidad,
-        fotos: _fotos,
+        fotos: _getPhotosForProduct(), // Usar el método helper
         ubicacion: _ubicacionController.text.trim(),
         fechaPublicacion: DateTime.now(),
       );
@@ -95,12 +103,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
               label: 'Título',
               hint: 'Ej: Piña MD2 fresca de temporada',
               controller: _tituloController,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Por favor ingresa un título';
-                }
-                return null;
-              },
+              validator: (value) => Validators.validateRequired(value, 'el título'),
             ),
             const SizedBox(height: 16),
             
@@ -152,12 +155,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
               hint: 'Describe las características de tu producto',
               controller: _descripcionController,
               keyboardType: TextInputType.multiline,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Por favor ingresa una descripción';
-                }
-                return null;
-              },
+              validator: Validators.validateDescription,
             ),
             const SizedBox(height: 16),
             
@@ -172,15 +170,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     hint: 'Ej: 15.50',
                     controller: _precioController,
                     keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Ingresa un precio';
-                      }
-                      if (double.tryParse(value) == null) {
-                        return 'Ingresa un número válido';
-                      }
-                      return null;
-                    },
+                    validator: (value) => Validators.validatePositiveNumber(value, 'el precio'),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -236,15 +226,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
               hint: 'Ej: 1000',
               controller: _cantidadController,
               keyboardType: TextInputType.number,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Ingresa la cantidad';
-                }
-                if (double.tryParse(value) == null) {
-                  return 'Ingresa un número válido';
-                }
-                return null;
-              },
+              validator: (value) => Validators.validatePositiveNumber(value, 'la cantidad'),
             ),
             const SizedBox(height: 16),
             
@@ -295,48 +277,12 @@ class _AddProductScreenState extends State<AddProductScreen> {
               label: 'Ubicación',
               hint: 'Ej: San Juan Bautista Tuxtla, Oaxaca',
               controller: _ubicacionController,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Por favor ingresa la ubicación';
-                }
-                return null;
-              },
+              validator: (value) => Validators.validateRequired(value, 'la ubicación'),
             ),
             const SizedBox(height: 16),
             
-            // Imágenes (simplificado para esta versión)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Imágenes',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  child: Center(
-                    child: TextButton.icon(
-                      onPressed: () {
-                        // En una versión completa, aquí se implementaría
-                        // la funcionalidad para subir imágenes
-                      },
-                      icon: const Icon(Icons.add_a_photo),
-                      label: const Text('Añadir imagen'),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            // Sección de imágenes mejorada
+            _buildImageSection(),
             const SizedBox(height: 32),
             
             CustomButton(
@@ -348,6 +294,51 @@ class _AddProductScreenState extends State<AddProductScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  /// Construye la sección de imágenes mejorada
+  Widget _buildImageSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Imágenes',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          height: 120,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.add_a_photo, 
+                     color: Colors.grey[600], 
+                     size: 32),
+                const SizedBox(height: 8),
+                Text(
+                  'Funcionalidad de imágenes\npronto disponible',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

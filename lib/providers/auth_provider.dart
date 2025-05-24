@@ -1,9 +1,18 @@
+import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pina_app/models/usuario.dart';
 import 'package:pina_app/services/auth_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+/// Proveedor de estado para la autenticación de usuarios
+/// Maneja el estado global de autenticación y perfil de usuario
+/// 
+/// Características principales:
+/// - Escucha cambios de estado de Firebase Auth
+/// - Maneja registro e inicio de sesión
+/// - Carga y mantiene el perfil del usuario desde Firestore
+/// - Proporciona mensajes de error localizados
 class AuthProvider with ChangeNotifier {
   final AuthService _authService = AuthService();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -12,6 +21,7 @@ class AuthProvider with ChangeNotifier {
   Usuario? _userProfile;
   bool _isLoading = false;
   String _error = '';
+  StreamSubscription<User?>? _authSubscription; // Agregar para manejar subscription
 
   User? get user => _user;
   Usuario? get userProfile => _userProfile;
@@ -20,29 +30,49 @@ class AuthProvider with ChangeNotifier {
   String get error => _error;
 
   AuthProvider() {
-    _authService.authStateChanges.listen((User? user) {
-      _user = user;
-      if (user != null) {
-        _loadUserProfile();
-      } else {
-        _userProfile = null;
-      }
-      notifyListeners();
-    });
+    _initAuthListener();
+  }
+
+  void _initAuthListener() {
+    _authSubscription = _authService.authStateChanges.listen(
+      (User? user) async {
+        _user = user;
+        if (user != null) {
+          await _loadUserProfile();
+        } else {
+          _userProfile = null;
+        }
+        notifyListeners();
+      },
+      onError: (error) {
+        print('Error en auth state changes: $error');
+        _error = 'Error de autenticación: $error';
+        notifyListeners();
+      },
+    );
   }
 
   Future<void> _loadUserProfile() async {
     if (_user == null) return;
     
     try {
-      DocumentSnapshot doc = await _firestore.collection('usuarios').doc(_user!.uid).get();
+      DocumentSnapshot doc = await _firestore
+          .collection('usuarios')
+          .doc(_user!.uid)
+          .get();
+          
       if (doc.exists) {
-        _userProfile = Usuario.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+        _userProfile = Usuario.fromMap(
+          doc.data() as Map<String, dynamic>, 
+          doc.id
+        );
       }
-      notifyListeners();
     } catch (e) {
       print('Error al cargar perfil: $e');
+      _error = 'Error al cargar el perfil de usuario';
+      // No lanzamos el error para evitar romper la app
     }
+    notifyListeners();
   }
 
   Future<bool> registrar({
@@ -101,6 +131,18 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> cerrarSesion() async {
     await _authService.cerrarSesion();
+  }
+
+  /// Limpiar errores manualmente
+  void clearError() {
+    _error = '';
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _authSubscription?.cancel(); // Cancelar subscription
+    super.dispose();
   }
 
   String _getErrorMessage(dynamic e) {

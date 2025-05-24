@@ -29,4 +29,16 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  # Aquí irían tus assets, fuentes, etc.
+  
+  # Configurar assets correctamente
+  assets:
+    - assets/images/
+    - assets/icons/
+  
+  # Configurar fuentes si las tienes
+  # fonts:
+  #   - family: CustomFont
+  #     fonts:
+  #       - asset: assets/fonts/CustomFont-Regular.ttf
+  #       - asset: assets/fonts/CustomFont-Bold.ttf
+  #         weight: 700

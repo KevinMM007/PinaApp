@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pina_app/config/constants.dart';
 import 'package:pina_app/providers/auth_provider.dart';
+import 'package:pina_app/utils/validators.dart';
 import 'package:pina_app/widgets/common/custom_button.dart';
 import 'package:pina_app/widgets/common/custom_text_field.dart';
 
@@ -60,10 +61,25 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 40),
-                // Logo o imagen
-                Image.asset(
-                  'assets/images/logo.png',
+                // Logo o imagen (temporalmente comentado hasta agregar imagen real)
+                // Image.asset(
+                //   'assets/images/logo.png',
+                //   height: 120,
+                // ),
+                // Placeholder temporal
+                Container(
                   height: 120,
+                  width: 120,
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade100,
+                    borderRadius: BorderRadius.circular(60),
+                    border: Border.all(color: Colors.green, width: 3),
+                  ),
+                  child: const Icon(
+                    Icons.eco,
+                    size: 60,
+                    color: Colors.green,
+                  ),
                 ),
                 const SizedBox(height: 20),
                 const Text(
@@ -90,15 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   prefixIcon: const Icon(Icons.email_outlined),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Ingresa tu correo electrónico';
-                    }
-                    if (!value.contains('@') || !value.contains('.')) {
-                      return 'Ingresa un correo electrónico válido';
-                    }
-                    return null;
-                  },
+                  validator: Validators.validateEmail,
                 ),
                 const SizedBox(height: 16),
                 CustomTextField(
@@ -107,15 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: _passwordController,
                   obscureText: true,
                   prefixIcon: const Icon(Icons.lock_outline),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Ingresa tu contraseña';
-                    }
-                    if (value.length < 6) {
-                      return 'La contraseña debe tener al menos 6 caracteres';
-                    }
-                    return null;
-                  },
+                  validator: Validators.validatePassword,
                 ),
                 const SizedBox(height: 24),
                 CustomButton(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pina_app/config/constants.dart';
 import 'package:pina_app/providers/auth_provider.dart';
+import 'package:pina_app/utils/validators.dart';
 import 'package:pina_app/widgets/common/custom_button.dart';
 import 'package:pina_app/widgets/common/custom_text_field.dart';
 
@@ -83,12 +84,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   hint: 'Juan Pérez',
                   controller: _nombreController,
                   prefixIcon: const Icon(Icons.person_outline),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Ingresa tu nombre';
-                    }
-                    return null;
-                  },
+                  validator: Validators.validateName,
                 ),
                 const SizedBox(height: 16),
                 CustomTextField(
@@ -97,15 +93,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   prefixIcon: const Icon(Icons.email_outlined),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Ingresa tu correo electrónico';
-                    }
-                    if (!value.contains('@') || !value.contains('.')) {
-                      return 'Ingresa un correo electrónico válido';
-                    }
-                    return null;
-                  },
+                  validator: Validators.validateEmail,
                 ),
                 const SizedBox(height: 16),
                 CustomTextField(
@@ -114,12 +102,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _telefonoController,
                   keyboardType: TextInputType.phone,
                   prefixIcon: const Icon(Icons.phone_outlined),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Ingresa tu número de teléfono';
-                    }
-                    return null;
-                  },
+                  validator: Validators.validatePhone,
                 ),
                 const SizedBox(height: 16),
                 CustomTextField(
@@ -128,15 +111,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _passwordController,
                   obscureText: true,
                   prefixIcon: const Icon(Icons.lock_outline),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Ingresa una contraseña';
-                    }
-                    if (value.length < 6) {
-                      return 'La contraseña debe tener al menos 6 caracteres';
-                    }
-                    return null;
-                  },
+                  validator: Validators.validatePassword,
                 ),
                 const SizedBox(height: 24),
                 const Text(

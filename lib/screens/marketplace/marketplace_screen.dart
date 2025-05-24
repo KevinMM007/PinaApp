@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pina_app/config/constants.dart';
+import 'package:pina_app/models/producto.dart';
 import 'package:pina_app/providers/auth_provider.dart';
 import 'package:pina_app/providers/product_provider.dart';
 import 'package:pina_app/widgets/product/product_card.dart';
@@ -22,6 +23,14 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<ProductProvider>(context, listen: false).cargarProductos();
     });
+  }
+
+  /// Helper method para filtrar productos
+  List<Producto> _getFilteredProducts(List<Producto> productos) {
+    if (_filterVariedad == 'Todas') {
+      return productos;
+    }
+    return productos.where((producto) => producto.variedad == _filterVariedad).toList();
   }
 
   @override
@@ -82,14 +91,11 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                         },
                         child: ListView.builder(
                           padding: const EdgeInsets.all(8),
-                          itemCount: productProvider.productos.length,
+                          // Filtra la lista ANTES de pasarla al ListView
+                          itemCount: _getFilteredProducts(productProvider.productos).length,
                           itemBuilder: (context, index) {
-                            final producto = productProvider.productos[index];
-                            
-                            // Filtrar por variedad si no es "Todas"
-                            if (_filterVariedad != 'Todas' && producto.variedad != _filterVariedad) {
-                              return const SizedBox.shrink();
-                            }
+                            final filteredProducts = _getFilteredProducts(productProvider.productos);
+                            final producto = filteredProducts[index];
                             
                             return ProductCard(
                               producto: producto,

@@ -16,26 +16,40 @@ class ProductDetailScreen extends StatefulWidget {
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   bool _isLoading = false;
+  String? _productId;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Solo cargar una vez cuando cambian las dependencias
+    final productId = ModalRoute.of(context)!.settings.arguments as String;
+    if (_productId != productId) {
+      _productId = productId;
+      _loadProduct();
+    }
+  }
+
+  Future<void> _loadProduct() async {
+    if (_productId == null) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final productProvider =
+        Provider.of<ProductProvider>(context, listen: false);
+    await productProvider.seleccionarProducto(_productId!);
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final productId = ModalRoute.of(context)!.settings.arguments as String;
     final productProvider = Provider.of<ProductProvider>(context);
     final authProvider = Provider.of<AuthProvider>(context);
-
-    // Cargar el producto seleccionado
-    if (productProvider.productoSeleccionado?.id != productId && !_isLoading) {
-      setState(() {
-        _isLoading = true;
-      });
-
-      Future.microtask(() async {
-        await productProvider.seleccionarProducto(productId);
-        setState(() {
-          _isLoading = false;
-        });
-      });
-    }
 
     final Producto? producto = productProvider.productoSeleccionado;
     final bool esPropio = producto?.idVendedor == authProvider.user?.uid;
@@ -50,24 +64,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             ? [
                 PopupMenuButton<String>(
                   onSelected: (value) {
-                    if (value == 'editar') {
-                      Navigator.pushNamed(
-                        context,
-                        '/edit_product',
-                        arguments: producto!.id,
-                      );
-                    } else if (value == 'eliminar') {
+                    if (value == 'eliminar') {
                       _mostrarDialogoEliminar(context, producto!.id ?? '');
                     }
+                    // Removemos la opción de editar por ahora hasta implementar la ruta
                   },
                   itemBuilder: (BuildContext context) => [
-                    const PopupMenuItem<String>(
-                      value: 'editar',
-                      child: ListTile(
-                        leading: Icon(Icons.edit),
-                        title: Text('Editar'),
-                      ),
-                    ),
                     const PopupMenuItem<String>(
                       value: 'eliminar',
                       child: ListTile(
