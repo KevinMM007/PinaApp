@@ -2,6 +2,16 @@
 
 Aplicación móvil para conectar productores y compradores de piña.
 
+## ⚠️ Estado Actual
+
+**IMPORTANTE**: La aplicación está funcionando con una solución temporal. La persistencia de Firestore está deshabilitada debido a problemas de caché que ocurren al reinstalar la aplicación. Esto significa:
+
+- ✅ La app funciona correctamente con conexión a internet
+- ❌ No funciona en modo offline
+- 📱 Puede usar más datos móviles de lo normal
+
+Para más detalles, ver [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)
+
 ## 🍍 Descripción
 
 PiñaApp es una plataforma que facilita la conexión directa entre productores de piña y compradores, eliminando intermediarios y promoviendo el comercio justo.
@@ -74,6 +84,16 @@ lib/
 
 ## 🔧 Configuración adicional
 
+### Configuración de Firebase
+
+La configuración de Firebase se encuentra en `lib/config/firebase_config.dart`. Actualmente:
+
+```dart
+static const bool enablePersistence = false; // Temporalmente deshabilitado
+```
+
+⚠️ **NO CAMBIAR** a `true` hasta que se solucione el problema de caché.
+
 ### Variables de entorno
 
 Crear archivo `.env` en la raíz del proyecto:
@@ -127,6 +147,20 @@ flutter build ios --release
 
 ## 🐛 Problemas conocidos y soluciones
 
+### Problema crítico actual
+
+**Síntomas**:
+1. Error "Servicio no disponible" al iniciar sesión con usuarios existentes
+2. Solo funciona correctamente con usuarios nuevos
+3. La app se queda en pantalla de carga al reiniciar
+4. Necesitas borrar datos de la app para que funcione
+
+**Solución temporal**: Persistencia de Firestore deshabilitada
+
+**Trabajo en progreso**: Investigando la causa raíz del problema de caché
+
+### Otros problemas
+
 1. **Error de logo**: Reemplazar el placeholder en `assets/images/logo.png` con una imagen real
 2. **Firebase no inicializado**: Verificar que los archivos de configuración estén en las ubicaciones correctas
 3. **Permisos de Android**: Agregar permisos necesarios en `android/app/src/main/AndroidManifest.xml`
@@ -158,3 +192,5 @@ Para preguntas o sugerencias:
 ---
 
 **PiñaApp** - Conectando el campo con el mercado 🍍
+
+*Versión actual: 1.0.5 (con solución temporal para problemas de caché)*

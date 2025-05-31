@@ -8,6 +8,9 @@ class AppConstants {
   static const String loginSuccess = 'Inicio de sesión exitoso';
   static const String registerSuccess = 'Registro exitoso';
   
+  // Configuración de funcionalidades
+  static const bool storageEnabled = false; // Cambiar a true cuando se configure Firebase Storage
+  
   // Roles de usuario
   static const String rolProductor = 'productor';
   static const String rolComprador = 'comprador';

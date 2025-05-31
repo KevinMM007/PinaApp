@@ -15,12 +15,26 @@ dependencies:
   firebase_core: ^3.1.0
   firebase_auth: ^5.1.0
   cloud_firestore: ^5.0.1
+  firebase_storage: ^12.0.1
+  
+  # Imágenes y Multimedia
+  image_picker: ^1.0.7
+  
+  # Mapas y Ubicación
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.0
+  geolocator: ^11.0.0
+  geocoding: ^3.0.0
+  permission_handler: ^11.2.0
+  http: ^1.1.2
   
   # Gestión de estado
   provider: ^6.1.1
   
   # Utilidades
   intl: ^0.19.0
+  shared_preferences: ^2.2.2
+  url_launcher: ^6.2.2
 
 dev_dependencies:
   flutter_test:

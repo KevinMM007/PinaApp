@@ -5,6 +5,7 @@ import 'package:pina_app/providers/auth_provider.dart';
 import 'package:pina_app/utils/validators.dart';
 import 'package:pina_app/widgets/common/custom_button.dart';
 import 'package:pina_app/widgets/common/custom_text_field.dart';
+import 'package:pina_app/widgets/debug/sync_debug_widget.dart'; // TEMPORAL
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -127,6 +128,16 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 16),
                 TextButton(
                   onPressed: () {
+                    Navigator.pushNamed(context, '/forgot_password');
+                  },
+                  child: const Text(
+                    '¿Olvidaste tu contraseña?',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () {
                     Navigator.pushNamed(context, '/register');
                   },
                   child: const Text(
@@ -134,6 +145,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextStyle(color: Colors.green),
                   ),
                 ),
+                
+                // WIDGET TEMPORAL DE DEBUG - QUITAR EN PRODUCCIÓN
+                const SizedBox(height: 32),
+                const QuickSyncButton(),
+                // FIN WIDGET TEMPORAL
               ],
             ),
           ),

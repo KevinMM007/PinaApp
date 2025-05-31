@@ -35,6 +35,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       FocusScope.of(context).unfocus();
       
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      
+      // Limpiar cualquier error previo
+      authProvider.clearError();
+      
       final success = await authProvider.registrar(
         email: _emailController.text.trim(),
         password: _passwordController.text,
@@ -43,13 +47,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
         tipo: _tipoUsuario,
       );
       
-      if (success) {
+      if (success && context.mounted) {
+        // Mostrar mensaje de éxito
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text(AppConstants.registerSuccess)),
+          const SnackBar(
+            content: Text('¡Cuenta creada exitosamente! Revisa tu email para verificar tu cuenta.'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 4),
+          ),
         );
-      } else if (authProvider.error.isNotEmpty) {
+        
+        // No navegar manualmente, el AuthWrapper se encargará de mostrar la pantalla correcta
+      } else if (context.mounted && authProvider.error.isNotEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(authProvider.error)),
+          SnackBar(
+            content: Text(authProvider.error),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
