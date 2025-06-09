@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pina_app/config/constants.dart';
+import 'package:pina_app/config/theme.dart';
 import 'package:pina_app/providers/auth_provider.dart';
 import 'package:pina_app/screens/profile/edit_profile_screen.dart';
 import 'package:pina_app/screens/profile/settings_screen.dart';
@@ -30,237 +31,238 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Mi Perfil'),
-        elevation: 0,
-        automaticallyImplyLeading: false,
-      ),
-      body: Consumer<AuthProvider>(
-        builder: (context, authProvider, child) {
-          // Si no hay usuario autenticado, mostrar mensaje
-          if (!authProvider.isAuthenticated) {
-            return const Center(
-              child: Text('No hay usuario autenticado'),
-            );
-          }
+      body: SafeArea(
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Colors.white, // Color de fondo uniforme
+          ),
+          child: Consumer<AuthProvider>(
+                builder: (context, authProvider, child) {
+                  // Si no hay usuario autenticado, mostrar mensaje
+                  if (!authProvider.isAuthenticated) {
+                    return const Center(
+                      child: Text('No hay usuario autenticado'),
+                    );
+                  }
 
-          final user = authProvider.userProfile;
+                  final user = authProvider.userProfile;
 
-          // Si está cargando
-          if (authProvider.isLoading && user == null) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Cargando perfil...'),
-                ],
-              ),
-            );
-          }
+                  // Si está cargando
+                  if (authProvider.isLoading && user == null) {
+                    return const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(),
+                          SizedBox(height: 16),
+                          Text('Cargando perfil...'),
+                        ],
+                      ),
+                    );
+                  }
 
-          // Si hay error
-          if (authProvider.error.isNotEmpty && user == null) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.error_outline,
-                      size: 64,
-                      color: Colors.red,
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Error al cargar perfil',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                  // Si hay error
+                  if (authProvider.error.isNotEmpty && user == null) {
+                    return _buildErrorState(authProvider);
+                  }
+
+                  // Si no hay perfil y no está cargando ni hay error
+                  if (user == null) {
+                    return const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(),
+                          SizedBox(height: 16),
+                          Text('Cargando perfil...'),
+                        ],
+                      ),
+                    );
+                  }
+
+                  // Mostrar el perfil
+                  return RefreshIndicator(
+                    onRefresh: () async {
+                      await authProvider.recargarPerfil();
+                    },
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          // Header del perfil
+                          _buildProfileHeader(context, user, authProvider),
+
+                          const SizedBox(height: 20),
+
+                          // Tarjeta de completitud del perfil
+                          if (!user.tienePerfilCompleto)
+                            ProfileCompletionCard(user: user),
+
+                          if (!user.tienePerfilCompleto) const SizedBox(height: 20),
+
+                          // Información específica por rol
+                          _buildRoleSpecificContent(context, user),
+
+                          const SizedBox(height: 20),
+
+                          // Estadísticas generales
+                          _buildStatsSection(user),
+
+                          const SizedBox(height: 20),
+
+                          // Acciones rápidas
+                          _buildQuickActions(context, authProvider),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      authProvider.error,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                    const SizedBox(height: 24),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        authProvider.clearError();
-                        authProvider.recargarPerfil();
-                      },
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Reintentar'),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    // Botón de depuración (solo en modo debug)
-                    if (const bool.fromEnvironment('dart.vm.product') ==
-                        false) ...[
-                      TextButton.icon(
-                        onPressed: () async {
-                          // Mostrar diálogo de depuración
-                          showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            builder: (context) => const AlertDialog(
-                              title: Text('Depuración de Firebase'),
-                              content: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  CircularProgressIndicator(),
-                                  SizedBox(height: 16),
-                                  Text('Ejecutando diagnóstico...'),
-                                ],
-                              ),
-                            ),
-                          );
-
-                          // Ejecutar diagnóstico
-                          await FirebaseDebugUtils.verificarEstadoFirebase();
-
-                          Navigator.pop(context);
-
-                          // Mostrar opciones de reparación
-                          final opcion = await showDialog<String>(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text('Opciones de reparación'),
-                              content: const Text(
-                                  'Selecciona una opción para intentar solucionar el problema:'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () =>
-                                      Navigator.pop(context, 'cancelar'),
-                                  child: const Text('Cancelar'),
-                                ),
-                                TextButton(
-                                  onPressed: () =>
-                                      Navigator.pop(context, 'reparar'),
-                                  child: const Text('Reparar documento'),
-                                ),
-                                TextButton(
-                                  onPressed: () =>
-                                      Navigator.pop(context, 'limpiar'),
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: Colors.orange,
-                                  ),
-                                  child: const Text('Limpiar caché'),
-                                ),
-                              ],
-                            ),
-                          );
-
-                          if (opcion == 'reparar') {
-                            final reparado = await FirebaseDebugUtils
-                                .repararDocumentoUsuario();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(reparado
-                                    ? 'Documento reparado. Recargando perfil...'
-                                    : 'No se pudo reparar el documento.'),
-                                backgroundColor:
-                                    reparado ? Colors.green : Colors.orange,
-                              ),
-                            );
-                            if (reparado) {
-                              authProvider.recargarPerfil();
-                            }
-                          } else if (opcion == 'limpiar') {
-                            final limpiado = await FirebaseDebugUtils
-                                .limpiarCacheYRecargar();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(limpiado
-                                    ? 'Caché limpiado. Recargando perfil...'
-                                    : 'No se pudo limpiar el caché. Intenta cerrar sesión y volver a entrar.'),
-                                backgroundColor:
-                                    limpiado ? Colors.green : Colors.orange,
-                              ),
-                            );
-                            if (limpiado) {
-                              // Forzar recarga desde servidor
-                              authProvider.recargarPerfil(
-                                  forceServerFetch: true);
-                            }
-                          }
-                        },
-                        icon: const Icon(Icons.bug_report),
-                        label: const Text('Diagnóstico'),
-                        style: TextButton.styleFrom(
-                          foregroundColor: Colors.orange,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
+                  );
+                },
               ),
-            );
-          }
-
-          // Si no hay perfil y no está cargando ni hay error
-          if (user == null) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Cargando perfil...'),
-                ],
-              ),
-            );
-          }
-
-          // Mostrar el perfil
-          return RefreshIndicator(
-            onRefresh: () async {
-              await authProvider.recargarPerfil();
-            },
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  // Header del perfil
-                  _buildProfileHeader(context, user, authProvider),
-
-                  const SizedBox(height: 20),
-
-                  // Tarjeta de completitud del perfil
-                  if (!user.tienePerfilCompleto)
-                    ProfileCompletionCard(user: user),
-
-                  if (!user.tienePerfilCompleto) const SizedBox(height: 20),
-
-                  // Información específica por rol
-                  _buildRoleSpecificContent(context, user),
-
-                  const SizedBox(height: 20),
-
-                  // Estadísticas generales
-                  _buildStatsSection(user),
-
-                  const SizedBox(height: 20),
-
-                  // Acciones rápidas
-                  _buildQuickActions(context, authProvider),
-                ],
-              ),
-            ),
-          );
-        },
+        ),
       ),
     );
+  }
+
+  Widget _buildErrorState(AuthProvider authProvider) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.error_outline,
+              size: 64,
+              color: Colors.red,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Error al cargar perfil',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              authProvider.error,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.red),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: () {
+                authProvider.clearError();
+                authProvider.recargarPerfil();
+              },
+              icon: const Icon(Icons.refresh),
+              label: const Text('Reintentar'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryGreen,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Botón de depuración (solo en modo debug)
+            if (const bool.fromEnvironment('dart.vm.product') == false) ...[
+              TextButton.icon(
+                onPressed: () => _showDebugOptions(authProvider),
+                icon: const Icon(Icons.bug_report),
+                label: const Text('Diagnóstico'),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.orange,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showDebugOptions(AuthProvider authProvider) async {
+    // Mostrar diálogo de depuración
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const AlertDialog(
+        title: Text('Depuración de Firebase'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Ejecutando diagnóstico...'),
+          ],
+        ),
+      ),
+    );
+
+    // Ejecutar diagnóstico
+    await FirebaseDebugUtils.verificarEstadoFirebase();
+
+    Navigator.pop(context);
+
+    // Mostrar opciones de reparación
+    final opcion = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Opciones de reparación'),
+        content: const Text(
+            'Selecciona una opción para intentar solucionar el problema:'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'cancelar'),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'reparar'),
+            child: const Text('Reparar documento'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'limpiar'),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.orange,
+            ),
+            child: const Text('Limpiar caché'),
+          ),
+        ],
+      ),
+    );
+
+    if (opcion == 'reparar') {
+      final reparado = await FirebaseDebugUtils.repararDocumentoUsuario();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(reparado
+              ? 'Documento reparado. Recargando perfil...'
+              : 'No se pudo reparar el documento.'),
+          backgroundColor: reparado ? Colors.green : Colors.orange,
+        ),
+      );
+      if (reparado) {
+        authProvider.recargarPerfil();
+      }
+    } else if (opcion == 'limpiar') {
+      final limpiado = await FirebaseDebugUtils.limpiarCacheYRecargar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(limpiado
+              ? 'Caché limpiado. Recargando perfil...'
+              : 'No se pudo limpiar el caché. Intenta cerrar sesión y volver a entrar.'),
+          backgroundColor: limpiado ? Colors.green : Colors.orange,
+        ),
+      );
+      if (limpiado) {
+        // Forzar recarga desde servidor
+        authProvider.recargarPerfil(forceServerFetch: true);
+      }
+    }
   }
 
   Widget _buildProfileHeader(
@@ -558,84 +560,222 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildQuickActions(BuildContext context, AuthProvider authProvider) {
-    return Card(
-      child: Column(
-        children: [
-          ListTile(
-            leading: const Icon(Icons.edit, color: Colors.blue),
-            title: const Text('Editar Perfil'),
-            subtitle: const Text('Actualiza tu información personal'),
-            trailing: const Icon(Icons.chevron_right),
+    final user = authProvider.userProfile;
+    
+    return Column(
+      children: [
+        // Editar Perfil
+        _buildActionTile(
+          icon: Icons.edit,
+          iconColor: Colors.blue,
+          title: 'Editar Perfil',
+          subtitle: 'Actualiza tu información personal',
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const EditProfileScreen(),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 8),
+        
+        // Mis Favoritos
+        _buildActionTile(
+          icon: Icons.favorite,
+          iconColor: Colors.red,
+          title: 'Mis Favoritos',
+          subtitle: 'Productos que me interesan',
+          onTap: () {
+            Navigator.pushNamed(context, '/favorites');
+          },
+        ),
+        const SizedBox(height: 8),
+        
+        // Solo mostrar para compradores
+        if (user?.tipo == AppConstants.rolComprador) ...[
+          _buildActionTile(
+            icon: Icons.shopping_cart,
+            iconColor: Colors.green,
+            title: 'Mis Necesidades',
+            subtitle: 'Solicitudes de compra publicadas',
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const EditProfileScreen(),
-                ),
-              );
+              Navigator.pushNamed(context, '/necesidades');
             },
           ),
-          const Divider(height: 1),
-          ListTile(
-            leading: const Icon(Icons.settings, color: Colors.grey),
-            title: const Text('Configuración'),
-            subtitle: const Text('Preferencias y privacidad'),
-            trailing: const Icon(Icons.chevron_right),
+          const SizedBox(height: 8),
+        ],
+        
+        // Configuración
+        _buildActionTile(
+          icon: Icons.settings,
+          iconColor: Colors.grey,
+          title: 'Configuración',
+          subtitle: 'Preferencias y privacidad',
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const SettingsScreen(),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 8),
+        
+        // Verificar Email
+        if (!authProvider.isEmailVerified) ...[
+          _buildActionTile(
+            icon: Icons.verified_user,
+            iconColor: Colors.orange,
+            title: 'Verificar Email',
+            subtitle: 'Confirma tu dirección de correo',
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const SettingsScreen(),
-                ),
-              );
+              Navigator.pushNamed(context, '/email_verification');
             },
           ),
-          if (!authProvider.isEmailVerified) ...[
-            const Divider(height: 1),
-            ListTile(
-              leading: const Icon(Icons.verified_user, color: Colors.orange),
-              title: const Text('Verificar Email'),
-              subtitle: const Text('Confirma tu dirección de correo'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () {
-                Navigator.pushNamed(context, '/email_verification');
-              },
-            ),
-          ],
-          const Divider(height: 1),
-          ListTile(
-            leading: const Icon(Icons.logout, color: Colors.red),
-            title: const Text('Cerrar Sesión'),
-            onTap: () async {
-              final result = await showDialog<bool>(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Cerrar Sesión'),
-                  content:
-                      const Text('¿Estás seguro de que deseas cerrar sesión?'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      child: const Text('Cancelar'),
+          const SizedBox(height: 8),
+        ],
+        
+        // Cerrar Sesión
+        _buildActionTile(
+          icon: Icons.logout,
+          iconColor: Colors.red,
+          title: 'Cerrar Sesión',
+          subtitle: null,
+          onTap: () async {
+            final result = await showDialog<bool>(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Cerrar Sesión'),
+                content:
+                    const Text('¿Estás seguro de que deseas cerrar sesión?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('Cancelar'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text(
+                      'Cerrar Sesión',
+                      style: TextStyle(color: Colors.red),
                     ),
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, true),
-                      child: const Text(
-                        'Cerrar Sesión',
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ),
-                  ],
-                ),
-              );
+                  ),
+                ],
+              ),
+            );
 
-              if (result == true) {
-                await authProvider.cerrarSesion();
-                // No navegar manualmente, el AuthWrapper manejará el cambio
-              }
-            },
+            if (result == true) {
+              await authProvider.cerrarSesion();
+              // No navegar manualmente, el AuthWrapper manejará el cambio
+            }
+          },
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildActionTile({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    String? subtitle,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            offset: const Offset(0, 3),
+            blurRadius: 12,
+            spreadRadius: 1,
+          ),
+          BoxShadow(
+            color: iconColor.withOpacity(0.1),
+            offset: const Offset(0, 1),
+            blurRadius: 8,
+            spreadRadius: 0,
           ),
         ],
+      ),
+      child: Material(
+        elevation: 0,
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          splashColor: iconColor.withOpacity(0.1),
+          highlightColor: iconColor.withOpacity(0.05),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.grey.withOpacity(0.15),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: iconColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: iconColor.withOpacity(0.2),
+                        offset: const Offset(0, 2),
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    icon,
+                    color: iconColor,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right,
+                  color: Colors.grey[400],
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

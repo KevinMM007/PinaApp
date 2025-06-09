@@ -1,0 +1,22 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo circular azul -->
+  <circle cx="100" cy="100" r="95" fill="#02569B" stroke="#0175C2" stroke-width="2"/>
+  
+  <!-- Logo Flutter estilizado -->
+  <g transform="translate(50, 50)">
+    <!-- Parte superior del logo Flutter -->
+    <polygon points="50,20 80,50 50,80 30,60" fill="#40C4FF"/>
+    
+    <!-- Parte media del logo Flutter -->
+    <polygon points="30,60 50,80 50,100 30,80" fill="#29B6F6"/>
+    
+    <!-- Parte inferior del logo Flutter -->
+    <polygon points="50,80 80,50 80,110 50,140" fill="#0277BD"/>
+    
+    <!-- Destacado central -->
+    <polygon points="50,80 65,65 65,95" fill="#81C784"/>
+  </g>
+  
+  <!-- Texto Flutter -->
+  <text x="100" y="170" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="white">Flutter</text>
+</svg>

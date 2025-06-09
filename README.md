@@ -61,12 +61,29 @@ PiñaApp es una plataforma que facilita la conexión directa entre productores d
      - `ios/Runner/GoogleService-Info.plist`
 
 4. **Agregar assets**
-   - Colocar el logo de la aplicación en `assets/images/logo.png`
-   - Agregar íconos adicionales en `assets/icons/`
+   - Los logos ya están configurados:
+     - `assets/images/logo.png` (logo principal para iconos y splash)
+     - `assets/images/logo2.png` (logo blanco para UI interna)
 
-5. **Ejecutar la aplicación**
+5. **Generar iconos y splash screen**
+   ```bash
+   # En Windows:
+   generate_app_assets.bat
+   
+   # En Linux/Mac:
+   chmod +x generate_app_assets.sh
+   ./generate_app_assets.sh
+   ```
+
+6. **Ejecutar la aplicación**
    ```bash
    flutter run
+   ```
+
+   **Nota**: Si encuentras errores de compilación, ejecuta:
+   ```bash
+   # Compilación limpia
+   test_compilation.bat
    ```
 
 ## 🏗️ Estructura del proyecto
@@ -159,11 +176,27 @@ flutter build ios --release
 
 **Trabajo en progreso**: Investigando la causa raíz del problema de caché
 
+### Configuración de logos
+
+🍍 **Sistema de logos implementado**:
+- **Logo principal** (`logo.png`): Usado para iconos de escritorio y splash screen
+- **Logo secundario** (`logo2.png`): Usado en UI interna (AppBar, placeholder, perfil)
+
+Para aplicar los cambios de logos, ejecuta:
+```bash
+# Windows
+generate_app_assets.bat
+
+# Linux/Mac  
+./generate_app_assets.sh
+```
+
+Ver [APLICAR_CAMBIOS_LOGOS.md](./APLICAR_CAMBIOS_LOGOS.md) para instrucciones detalladas.
+
 ### Otros problemas
 
-1. **Error de logo**: Reemplazar el placeholder en `assets/images/logo.png` con una imagen real
-2. **Firebase no inicializado**: Verificar que los archivos de configuración estén en las ubicaciones correctas
-3. **Permisos de Android**: Agregar permisos necesarios en `android/app/src/main/AndroidManifest.xml`
+1. **Firebase no inicializado**: Verificar que los archivos de configuración estén en las ubicaciones correctas
+2. **Permisos de Android**: Agregar permisos necesarios en `android/app/src/main/AndroidManifest.xml`
 
 ## 🤝 Contribuir
 

@@ -10,6 +10,8 @@ class Producto {
   final String calidad;
   final List<String> fotos;
   final String ubicacion;
+  final double? latitud;
+  final double? longitud;
   final DateTime fechaPublicacion;
 
   Producto({
@@ -24,6 +26,8 @@ class Producto {
     required this.calidad,
     required this.fotos,
     required this.ubicacion,
+    this.latitud,
+    this.longitud,
     required this.fechaPublicacion,
   });
 
@@ -40,6 +44,8 @@ class Producto {
       calidad: map['calidad'] ?? '',
       fotos: List<String>.from(map['fotos'] ?? []),
       ubicacion: map['ubicacion'] ?? '',
+      latitud: map['latitud']?.toDouble(),
+      longitud: map['longitud']?.toDouble(),
       fechaPublicacion: (map['fechaPublicacion'] as dynamic)?.toDate() ?? DateTime.now(),
     );
   }
@@ -56,6 +62,8 @@ class Producto {
       'calidad': calidad,
       'fotos': fotos,
       'ubicacion': ubicacion,
+      'latitud': latitud,
+      'longitud': longitud,
       'fechaPublicacion': fechaPublicacion,
     };
   }

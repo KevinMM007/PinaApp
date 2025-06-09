@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pina_app/models/producto.dart';
 import 'package:pina_app/config/theme.dart';
+import 'package:pina_app/widgets/product/favorite_button.dart';
 import 'package:intl/intl.dart';
 
 class ProductCard extends StatefulWidget {
@@ -192,6 +193,16 @@ class _ProductCardState extends State<ProductCard>
             child: _buildQualityBadge(),
           ),
 
+          // Botón de favorito
+          Positioned(
+            bottom: AppTheme.space8,
+            right: AppTheme.space8,
+            child: FavoriteButton(
+              productoId: widget.producto.id!,
+              size: 36,
+            ),
+          ),
+
           // Indicador de múltiples fotos
           if (widget.producto.fotos.length > 1)
             Positioned(
@@ -210,10 +221,11 @@ class _ProductCardState extends State<ProductCard>
       decoration: const BoxDecoration(
         gradient: AppTheme.primaryGradient,
       ),
-      child: const Center(
-        child: Icon(
-          Icons.local_florist,
-          size: 48,
+      child: Center(
+        child: Image.asset(
+          'assets/images/logo2.png',
+          width: 72,
+          height: 72,
           color: Colors.white,
         ),
       ),
@@ -221,31 +233,33 @@ class _ProductCardState extends State<ProductCard>
   }
 
   Widget _buildQualityBadge() {
+    final qualityConfig = _getQualityConfig(widget.producto.calidad);
+    
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppTheme.space8,
         vertical: AppTheme.space4,
       ),
       decoration: BoxDecoration(
-        gradient: AppTheme.goldGradient,
+        gradient: qualityConfig['gradient'],
         borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
         boxShadow: AppTheme.createShadow(
           elevation: AppTheme.elevationLow,
           opacity: 0.2,
         ),
       ),
-      child: const Row(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            Icons.star,
+            qualityConfig['icon'],
             size: 14,
             color: Colors.white,
           ),
-          SizedBox(width: AppTheme.space4),
+          const SizedBox(width: AppTheme.space4),
           Text(
-            'Premium',
-            style: TextStyle(
+            widget.producto.calidad,
+            style: const TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
               color: Colors.white,
@@ -255,6 +269,40 @@ class _ProductCardState extends State<ProductCard>
         ],
       ),
     );
+  }
+
+  /// Configuración de colores e iconos según la calidad del producto
+  Map<String, dynamic> _getQualityConfig(String calidad) {
+    switch (calidad.toLowerCase()) {
+      case 'premium':
+        return {
+          'gradient': AppTheme.goldGradient,
+          'icon': Icons.star,
+        };
+      case 'estándar':
+      case 'estandar':
+        return {
+          'gradient': AppTheme.primaryGradient,
+          'icon': Icons.check_circle,
+        };
+      case 'segunda':
+        return {
+          'gradient': LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.grey[600]!,
+              Colors.grey[700]!,
+            ],
+          ),
+          'icon': Icons.eco,
+        };
+      default:
+        return {
+          'gradient': AppTheme.primaryGradient,
+          'icon': Icons.local_florist,
+        };
+    }
   }
 
   Widget _buildPhotoCountIndicator() {
@@ -323,12 +371,13 @@ class _ProductCardState extends State<ProductCard>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
-                      Icons.eco,
-                      size: 14,
+                    Image.asset(
+                      'assets/images/logo2.png',
+                      width: 14,
+                      height: 14,
                       color: AppTheme.primaryGreen,
                     ),
-                    const SizedBox(width: AppTheme.space4),
+                    const SizedBox(width: 4),
                     Text(
                       widget.producto.variedad,
                       style: const TextStyle(

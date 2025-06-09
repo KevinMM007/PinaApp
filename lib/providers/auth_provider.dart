@@ -82,7 +82,8 @@ class AuthProvider with ChangeNotifier {
 
     while (!success && _retryCount < _maxRetries) {
       try {
-        await _loadUserProfile();
+        // No mostrar loading en la carga inicial
+        await _loadUserProfile(showLoading: false);
         success = true;
       } catch (e) {
         _retryCount++;
@@ -120,15 +121,18 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<void> _loadUserProfile({bool forceServerFetch = false}) async {
+  Future<void> _loadUserProfile({bool forceServerFetch = false, bool showLoading = true}) async {
     if (_user == null) return;
 
     try {
       print('📥 Cargando perfil para: ${_user!.email}');
       print('🌐 Forzar desde servidor: $forceServerFetch');
-      _isLoading = true;
+      // Solo mostrar loading si se solicita explícitamente
+      if (showLoading) {
+        _isLoading = true;
+        notifyListeners();
+      }
       _error = '';
-      notifyListeners();
 
       // Primero verificar si el documento existe con timeout
       final docRef = _firestore.collection('usuarios').doc(_user!.uid);
@@ -584,7 +588,7 @@ class AuthProvider with ChangeNotifier {
 
     // Intentar cargar directamente con fuerza desde servidor
     try {
-      await _loadUserProfile(forceServerFetch: forceServerFetch);
+      await _loadUserProfile(forceServerFetch: forceServerFetch, showLoading: true);
     } catch (e) {
       // Si falla, usar el sistema de reintentos
       await _loadUserProfileWithRetry();
@@ -620,7 +624,7 @@ class AuthProvider with ChangeNotifier {
         datos: datos,
       );
 
-      await _loadUserProfile();
+      await _loadUserProfile(showLoading: true);
       _isLoading = false;
       notifyListeners();
       return true;
@@ -647,7 +651,7 @@ class AuthProvider with ChangeNotifier {
         perfilDatos: perfilDatos,
       );
 
-      await _loadUserProfile();
+      await _loadUserProfile(showLoading: true);
       _isLoading = false;
       notifyListeners();
       return true;
@@ -673,7 +677,7 @@ class AuthProvider with ChangeNotifier {
         configuracion: configuracion,
       );
 
-      await _loadUserProfile();
+      await _loadUserProfile(showLoading: true);
       _isLoading = false;
       notifyListeners();
       return true;
@@ -723,7 +727,7 @@ class AuthProvider with ChangeNotifier {
         urlFoto: urlFoto,
       );
 
-      await _loadUserProfile();
+      await _loadUserProfile(showLoading: true);
       _isLoading = false;
       notifyListeners();
       return true;
@@ -754,7 +758,7 @@ class AuthProvider with ChangeNotifier {
         longitud: longitud,
       );
 
-      await _loadUserProfile();
+      await _loadUserProfile(showLoading: true);
       _isLoading = false;
       notifyListeners();
       return true;

@@ -33,18 +33,35 @@ class ProductProvider with ChangeNotifier {
 
   // Seleccionar un producto para mostrar detalles
   Future<void> seleccionarProducto(String id) async {
-    _isLoading = true;
     _error = '';
-    notifyListeners();
     
     try {
-      _productoSeleccionado = await _databaseService.getProducto(id);
-      _isLoading = false;
+      // Primero intentar obtener el producto de la lista cargada
+      final productoCached = _productos.firstWhere(
+        (p) => p.id == id,
+        orElse: () => throw Exception('Producto no encontrado en cache'),
+      );
+      
+      // Si lo encontramos en cache, usarlo inmediatamente sin loading
+      _productoSeleccionado = productoCached;
       notifyListeners();
+      
+      // Luego actualizar desde la base de datos en segundo plano
+      _databaseService.getProducto(id).then((producto) {
+        _productoSeleccionado = producto;
+        notifyListeners();
+      }).catchError((e) {
+        print('Error actualizando producto: $e');
+      });
     } catch (e) {
-      _error = 'Error al obtener el producto: $e';
-      _isLoading = false;
-      notifyListeners();
+      // Si no está en cache, obtenerlo sin mostrar loading
+      try {
+        _productoSeleccionado = await _databaseService.getProducto(id);
+        notifyListeners();
+      } catch (e) {
+        _error = 'Error al obtener el producto: $e';
+        notifyListeners();
+      }
     }
   }
 

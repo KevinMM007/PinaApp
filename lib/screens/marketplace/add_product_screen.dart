@@ -7,6 +7,7 @@ import 'package:pina_app/providers/product_provider.dart';
 import 'package:pina_app/utils/validators.dart';
 import 'package:pina_app/widgets/common/custom_button.dart';
 import 'package:pina_app/widgets/common/custom_text_field.dart';
+import 'package:pina_app/widgets/common/location_picker_widget.dart';
 
 class AddProductScreen extends StatefulWidget {
   const AddProductScreen({Key? key}) : super(key: key);
@@ -21,11 +22,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final _descripcionController = TextEditingController();
   final _precioController = TextEditingController();
   final _cantidadController = TextEditingController();
-  final _ubicacionController = TextEditingController();
   
   String _variedad = AppConstants.variedadesPina[0];
   String _calidad = 'Estándar';
   String _unidadPrecio = 'kg';
+  String _ubicacionTexto = '';
+  double? _latitud;
+  double? _longitud;
   
   final List<String> _calidades = ['Premium', 'Estándar', 'Segunda'];
   final List<String> _unidades = ['kg', 'tonelada', 'pieza'];
@@ -48,12 +51,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
     _descripcionController.dispose();
     _precioController.dispose();
     _cantidadController.dispose();
-    _ubicacionController.dispose();
     super.dispose();
   }
 
   Future<void> _guardarProducto() async {
-    if (_formKey.currentState!.validate()) {
+    if (_formKey.currentState!.validate() && _ubicacionTexto.isNotEmpty) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final productProvider = Provider.of<ProductProvider>(context, listen: false);
       
@@ -67,7 +69,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
         cantidadDisponible: double.parse(_cantidadController.text),
         calidad: _calidad,
         fotos: _getPhotosForProduct(), // Usar el método helper
-        ubicacion: _ubicacionController.text.trim(),
+        ubicacion: _ubicacionTexto,
+        latitud: _latitud,
+        longitud: _longitud,
         fechaPublicacion: DateTime.now(),
       );
       
@@ -83,6 +87,10 @@ class _AddProductScreenState extends State<AddProductScreen> {
           SnackBar(content: Text(productProvider.error)),
         );
       }
+    } else if (_ubicacionTexto.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor selecciona una ubicación')),
+      );
     }
   }
 
@@ -273,11 +281,16 @@ class _AddProductScreenState extends State<AddProductScreen> {
             ),
             const SizedBox(height: 16),
             
-            CustomTextField(
-              label: 'Ubicación',
-              hint: 'Ej: San Juan Bautista Tuxtla, Oaxaca',
-              controller: _ubicacionController,
-              validator: (value) => Validators.validateRequired(value, 'la ubicación'),
+            // Ubicación con selector de mapa
+            LocationPickerWidget(
+              hintText: 'Selecciona la ubicación de tu finca o almacén',
+              onLocationSelected: (latitude, longitude, address) {
+                setState(() {
+                  _latitud = latitude;
+                  _longitud = longitude;
+                  _ubicacionTexto = address;
+                });
+              },
             ),
             const SizedBox(height: 16),
             

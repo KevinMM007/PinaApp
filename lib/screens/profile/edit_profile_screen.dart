@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pina_app/config/constants.dart';
+import 'package:pina_app/config/theme.dart';
 import 'package:pina_app/providers/auth_provider.dart';
 import 'package:pina_app/utils/validators.dart';
 import 'package:pina_app/widgets/common/custom_button.dart';
@@ -107,8 +108,13 @@ class _EditProfileScreenState extends State<EditProfileScreen>
           appBar: AppBar(
             title: const Text('Editar Perfil'),
             elevation: 0,
+            backgroundColor: AppTheme.primaryGreen,
             bottom: TabBar(
               controller: _tabController,
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.white.withOpacity(0.7),
+              indicatorColor: Colors.white,
+              indicatorWeight: 3,
               tabs: const [
                 Tab(
                   icon: Icon(Icons.person),

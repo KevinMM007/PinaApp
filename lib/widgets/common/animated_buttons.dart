@@ -1,6 +1,104 @@
 import 'package:flutter/material.dart';
 import 'package:pina_app/config/theme.dart';
 
+/// Botón elevado con animaciones
+class AnimatedElevatedButton extends StatefulWidget {
+  final VoidCallback? onPressed;
+  final Widget child;
+  final Color? backgroundColor;
+  final EdgeInsetsGeometry? padding;
+  final BorderRadius? borderRadius;
+  final double? elevation;
+
+  const AnimatedElevatedButton({
+    Key? key,
+    this.onPressed,
+    required this.child,
+    this.backgroundColor,
+    this.padding,
+    this.borderRadius,
+    this.elevation,
+  }) : super(key: key);
+
+  @override
+  State<AnimatedElevatedButton> createState() => _AnimatedElevatedButtonState();
+}
+
+class _AnimatedElevatedButtonState extends State<AnimatedElevatedButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _elevationAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 150),
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.95,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+
+    _elevationAnimation = Tween<double>(
+      begin: widget.elevation ?? AppTheme.elevationMedium,
+      end: (widget.elevation ?? AppTheme.elevationMedium) + 2,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isEnabled = widget.onPressed != null;
+
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: Material(
+            elevation: _elevationAnimation.value,
+            borderRadius: widget.borderRadius ?? BorderRadius.circular(AppTheme.radiusMedium),
+            color: isEnabled 
+                ? (widget.backgroundColor ?? AppTheme.primaryGreen)
+                : AppTheme.textHint,
+            child: InkWell(
+              onTap: isEnabled ? widget.onPressed : null,
+              onTapDown: isEnabled ? (_) => _animationController.forward() : null,
+              onTapUp: isEnabled ? (_) => _animationController.reverse() : null,
+              onTapCancel: isEnabled ? () => _animationController.reverse() : null,
+              borderRadius: widget.borderRadius ?? BorderRadius.circular(AppTheme.radiusMedium),
+              child: Padding(
+                padding: widget.padding ?? const EdgeInsets.symmetric(
+                  vertical: AppTheme.space16,
+                  horizontal: AppTheme.space24,
+                ),
+                child: widget.child,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+
+
 /// Botón principal con gradiente y animaciones
 class GradientButton extends StatefulWidget {
   final String text;

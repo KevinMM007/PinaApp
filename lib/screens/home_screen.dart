@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:pina_app/config/constants.dart';
 import 'package:pina_app/config/theme.dart';
 import 'package:pina_app/screens/marketplace/marketplace_screen.dart';
 import 'package:pina_app/screens/profile/profile_screen.dart';
@@ -110,34 +109,37 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.center,
-            colors: [
-              AppTheme.backgroundLight,
-              Colors.white,
+      body: SafeArea(
+        bottom: false, // Permitir que el BottomNavigationBar se extienda hasta abajo
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.center,
+              colors: [
+                AppTheme.backgroundLight,
+                Colors.white,
+              ],
+            ),
+          ),
+          child: Column(
+            children: [
+              // AppBar personalizado
+              _buildCustomAppBar(),
+              // Contenido principal
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _currentIndex = index;
+                    });
+                  },
+                  children: _screens,
+                ),
+              ),
             ],
           ),
-        ),
-        child: Column(
-          children: [
-            // AppBar personalizado
-            _buildCustomAppBar(),
-            // Contenido principal
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                onPageChanged: (index) {
-                  setState(() {
-                    _currentIndex = index;
-                  });
-                },
-                children: _screens,
-              ),
-            ),
-          ],
         ),
       ),
       bottomNavigationBar: _buildBottomNavigationBar(),
@@ -149,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       animation: _appBarColorAnimation,
       builder: (context, child) {
         return Container(
-          height: MediaQuery.of(context).padding.top + 60,
+          height: 60, // Altura fija sin incluir padding.top
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -167,71 +169,48 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
             ],
           ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppTheme.space16,
-                vertical: AppTheme.space8,
-              ),
-              child: Row(
-                children: [
-                  // Logo y título
-                  Expanded(
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Icon(
-                            Icons.local_florist,
-                            color: Colors.white,
-                            size: 24,
-                          ),
-                        ),
-                        const SizedBox(width: AppTheme.space12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              AppConstants.appName,
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            Text(
-                              _screenTitles[_currentIndex],
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.white.withOpacity(0.8),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
+            ),
+            child: Row(
+              children: [
+                // Logo y título
+                Expanded(
+                  child: Row(
+                    children: [
+                      // Icono de la aplicación
+                      Image.asset(
+                        'assets/images/logo2.png',
+                        width: 40,
+                        height: 40,
+                        color: Colors.white,
+                      ),
+                      const SizedBox(width: 12),
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Solo mostrar el ícono, sin texto
+                          SizedBox.shrink(),
+                        ],
+                      ),
+                    ],
                   ),
-                  // Acciones del AppBar
-                  if (_currentIndex == 0) // Solo en Marketplace
-                    IconButtonWithRipple(
-                      icon: Icons.notifications_outlined,
-                      onPressed: () {
-                        // TODO: Implementar notificaciones
-                      },
-                      iconColor: Colors.white,
-                      backgroundColor: Colors.white.withOpacity(0.1),
-                      size: 40,
-                    ),
-                ],
-              ),
+                ),
+                // Acciones del AppBar
+                if (_currentIndex == 0) // Solo en Marketplace
+                  IconButtonWithRipple(
+                    icon: Icons.notifications_outlined,
+                    onPressed: () {
+                      // TODO: Implementar notificaciones
+                    },
+                    iconColor: Colors.white,
+                    backgroundColor: Colors.white.withOpacity(0.1),
+                    size: 40,
+                  ),
+              ],
             ),
           ),
         );
@@ -244,7 +223,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppTheme.radiusLarge),
+          top: Radius.circular(24),
         ),
         boxShadow: [
           BoxShadow(
@@ -256,7 +235,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
       child: ClipRRect(
         borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppTheme.radiusLarge),
+          top: Radius.circular(24),
         ),
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
@@ -378,7 +357,7 @@ class _MessagesScreenState extends State<_MessagesScreen>
                       color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: AppTheme.space24),
+                  const SizedBox(height: 24),
                   Text(
                     'Mensajes',
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -386,7 +365,7 @@ class _MessagesScreenState extends State<_MessagesScreen>
                           color: AppTheme.textPrimary,
                         ),
                   ),
-                  const SizedBox(height: AppTheme.space12),
+                  const SizedBox(height: 12),
                   Text(
                     'Esta funcionalidad estará disponible\nen el módulo 2 de la aplicación',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -395,15 +374,15 @@ class _MessagesScreenState extends State<_MessagesScreen>
                         ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: AppTheme.space32),
+                  const SizedBox(height: 32),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: AppTheme.space20,
-                      vertical: AppTheme.space12,
+                      horizontal: 20,
+                      vertical: 12,
                     ),
                     decoration: BoxDecoration(
                       gradient: AppTheme.goldGradient,
-                      borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+                      borderRadius: BorderRadius.circular(24),
                       boxShadow: AppTheme.createShadow(
                         elevation: AppTheme.elevationLow,
                         color: AppTheme.primaryGold,
@@ -418,7 +397,7 @@ class _MessagesScreenState extends State<_MessagesScreen>
                           size: 16,
                           color: Colors.white,
                         ),
-                        SizedBox(width: AppTheme.space8),
+                        SizedBox(width: 8),
                         Text(
                           'Próximamente',
                           style: TextStyle(
