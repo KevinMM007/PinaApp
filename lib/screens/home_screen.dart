@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:pina_app/config/theme.dart';
+import 'package:pina_app/providers/auth_provider.dart';
 import 'package:pina_app/screens/marketplace/marketplace_screen.dart';
 import 'package:pina_app/screens/profile/profile_screen.dart';
 import 'package:pina_app/widgets/common/animated_buttons.dart';
@@ -38,6 +40,70 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     Icons.person,
   ];
 
+  void _showWelcomeSnackbar() {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Icon(
+                  Icons.check_circle,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '¡Bienvenido de nuevo!',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Has iniciado sesión correctamente',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        backgroundColor: const Color(0xFF4CAF50),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        margin: const EdgeInsets.only(
+          bottom: 80,
+          left: 16,
+          right: 16,
+        ),
+        duration: const Duration(seconds: 3),
+        elevation: 6,
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -73,6 +139,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     // Iniciar animaciones
     _fabAnimationController.forward();
+
+    // Verificar si debemos mostrar el snackbar de bienvenida
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      if (args != null && args['showWelcomeSnackbar'] == true) {
+        _showWelcomeSnackbar();
+      }
+    });
   }
 
   @override
@@ -108,41 +182,61 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        bottom: false, // Permitir que el BottomNavigationBar se extienda hasta abajo
-        child: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.center,
-              colors: [
-                AppTheme.backgroundLight,
-                Colors.white,
-              ],
+    return Consumer<AuthProvider>(
+      builder: (context, authProvider, child) {
+        // Si no hay usuario autenticado, navegar a login
+        if (!authProvider.isAuthenticated) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/login',
+              (route) => false,
+            );
+          });
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
             ),
-          ),
-          child: Column(
-            children: [
-              // AppBar personalizado
-              _buildCustomAppBar(),
-              // Contenido principal
-              Expanded(
-                child: PageView(
-                  controller: _pageController,
-                  onPageChanged: (index) {
-                    setState(() {
-                      _currentIndex = index;
-                    });
-                  },
-                  children: _screens,
+          );
+        }
+
+        return Scaffold(
+          body: SafeArea(
+            bottom: false, // Permitir que el BottomNavigationBar se extienda hasta abajo
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.center,
+                  colors: [
+                    AppTheme.backgroundLight,
+                    Colors.white,
+                  ],
                 ),
               ),
-            ],
+              child: Column(
+                children: [
+                  // AppBar personalizado
+                  _buildCustomAppBar(),
+                  // Contenido principal
+                  Expanded(
+                    child: PageView(
+                      controller: _pageController,
+                      onPageChanged: (index) {
+                        setState(() {
+                          _currentIndex = index;
+                        });
+                      },
+                      children: _screens,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
-      bottomNavigationBar: _buildBottomNavigationBar(),
+          bottomNavigationBar: _buildBottomNavigationBar(),
+        );
+      },
     );
   }
 

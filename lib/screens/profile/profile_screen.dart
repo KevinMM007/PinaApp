@@ -38,10 +38,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           child: Consumer<AuthProvider>(
                 builder: (context, authProvider, child) {
-                  // Si no hay usuario autenticado, mostrar mensaje
+                  // Si no hay usuario autenticado, navegar a login
                   if (!authProvider.isAuthenticated) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        '/login',
+                        (route) => false,
+                      );
+                    });
                     return const Center(
-                      child: Text('No hay usuario autenticado'),
+                      child: CircularProgressIndicator(),
                     );
                   }
 
@@ -669,7 +676,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             if (result == true) {
               await authProvider.cerrarSesion();
-              // No navegar manualmente, el AuthWrapper manejará el cambio
+              // Navegar a la pantalla de login
+              if (mounted) {
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/login',
+                  (route) => false,
+                );
+              }
             }
           },
         ),

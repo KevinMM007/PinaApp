@@ -54,11 +54,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
             content: Text(
                 '¡Cuenta creada exitosamente! Revisa tu email para verificar tu cuenta.'),
             backgroundColor: Colors.green,
-            duration: Duration(seconds: 4),
+            duration: Duration(seconds: 3),
           ),
         );
 
-        // No navegar manualmente, el AuthWrapper se encargará de mostrar la pantalla correcta
+        // Navegar a la pantalla principal después de un breve delay
+        Future.delayed(const Duration(milliseconds: 800), () {
+          if (context.mounted) {
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/home',
+              (route) => false,
+            );
+          }
+        });
       } else if (context.mounted && authProvider.error.isNotEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

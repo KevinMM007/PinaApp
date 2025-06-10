@@ -54,3 +54,7 @@ GoogleService-Info.plist
 
 # Exceptions to above rules.
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
+
+# Ignorar todos los archivos .md y .bat
+*.md
+*.bat
