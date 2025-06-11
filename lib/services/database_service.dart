@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pina_app/models/producto.dart';
 import 'package:pina_app/models/favorito.dart';
 import 'package:pina_app/models/necesidad_compra.dart';
+import 'package:pina_app/models/usuario.dart';
 
 class DatabaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -13,6 +14,8 @@ class DatabaseService {
       FirebaseFirestore.instance.collection('favoritos');
   final CollectionReference _necesidadesCollection = 
       FirebaseFirestore.instance.collection('necesidades');
+  final CollectionReference _usuariosCollection = 
+      FirebaseFirestore.instance.collection('usuarios');
 
   // Obtener stream de productos
   Stream<List<Producto>> get productos {
@@ -201,5 +204,23 @@ class DatabaseService {
     }
     
     return necesidades;
+  }
+
+  // ===== MÉTODOS PARA USUARIOS =====
+
+  /// Obtener información de un usuario
+  Future<Usuario?> getUsuario(String uid) async {
+    try {
+      DocumentSnapshot doc = await _usuariosCollection.doc(uid).get();
+      if (doc.exists) {
+        final data = doc.data() as Map<String, dynamic>;
+        data['uid'] = uid; // Asegurar que el UID esté presente
+        return Usuario.fromMap(data, uid);
+      }
+      return null;
+    } catch (e) {
+      print('Error obteniendo usuario $uid: $e');
+      return null;
+    }
   }
 }

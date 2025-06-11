@@ -4,6 +4,7 @@ import 'package:pina_app/config/theme.dart';
 import 'package:pina_app/providers/auth_provider.dart';
 import 'package:pina_app/screens/marketplace/marketplace_screen.dart';
 import 'package:pina_app/screens/profile/profile_screen.dart';
+import 'package:pina_app/screens/transactions/conversations_screen.dart';
 import 'package:pina_app/widgets/common/animated_buttons.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -24,7 +25,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   // Pantallas principales de la aplicación
   final List<Widget> _screens = [
     const MarketplaceScreen(),
-    const _MessagesScreen(), // Pantalla temporal para mensajes
+    const ConversationsScreen(), // Pantalla de conversaciones
     const ProfileScreen(),
   ];
 
@@ -373,142 +374,4 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 }
 
-// Pantalla temporal para mensajes
-class _MessagesScreen extends StatefulWidget {
-  const _MessagesScreen({Key? key}) : super(key: key);
 
-  @override
-  State<_MessagesScreen> createState() => _MessagesScreenState();
-}
-
-class _MessagesScreenState extends State<_MessagesScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _fadeAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-
-    _scaleAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.elasticOut,
-    ));
-
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-
-    _animationController.forward();
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: AnimatedBuilder(
-        animation: _animationController,
-        builder: (context, child) {
-          return Transform.scale(
-            scale: _scaleAnimation.value,
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      gradient: AppTheme.primaryGradient,
-                      borderRadius: BorderRadius.circular(60),
-                      boxShadow: AppTheme.createShadow(
-                        elevation: AppTheme.elevationMedium,
-                        color: AppTheme.primaryGreen,
-                        opacity: 0.3,
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.message_outlined,
-                      size: 60,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Mensajes',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.textPrimary,
-                        ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Esta funcionalidad estará disponible\nen el módulo 2 de la aplicación',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppTheme.textSecondary,
-                          height: 1.5,
-                        ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 32),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      gradient: AppTheme.goldGradient,
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: AppTheme.createShadow(
-                        elevation: AppTheme.elevationLow,
-                        color: AppTheme.primaryGold,
-                        opacity: 0.3,
-                      ),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.schedule,
-                          size: 16,
-                          color: Colors.white,
-                        ),
-                        SizedBox(width: 8),
-                        Text(
-                          'Próximamente',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}

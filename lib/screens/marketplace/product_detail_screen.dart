@@ -3,10 +3,14 @@ import 'package:provider/provider.dart';
 import 'package:pina_app/config/constants.dart';
 import 'package:pina_app/config/theme.dart';
 import 'package:pina_app/models/producto.dart';
+import 'package:pina_app/models/usuario.dart';
 import 'package:pina_app/providers/auth_provider.dart';
 import 'package:pina_app/providers/product_provider.dart';
 import 'package:pina_app/widgets/product/favorite_button.dart';
 import 'package:pina_app/widgets/common/animated_buttons.dart';
+import 'package:pina_app/services/chat_service.dart';
+import 'package:pina_app/services/database_service.dart';
+import 'package:pina_app/screens/transactions/offer_screen.dart';
 import 'package:intl/intl.dart';
 
 class ProductDetailScreen extends StatefulWidget {
@@ -21,6 +25,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
   String? _productId;
   final PageController _pageController = PageController();
   int _currentImageIndex = 0;
+  final _chatService = ChatService();
+  final _databaseService = DatabaseService();
+  Usuario? _vendedor;
 
   late AnimationController _fadeController;
   late AnimationController _slideController;
@@ -84,6 +91,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
     final productProvider =
         Provider.of<ProductProvider>(context, listen: false);
     await productProvider.seleccionarProducto(_productId!);
+
+    // Cargar información del vendedor
+    if (productProvider.productoSeleccionado != null) {
+      final vendedorData = await _databaseService.getUsuario(
+        productProvider.productoSeleccionado!.idVendedor,
+      );
+      if (mounted && vendedorData != null) {
+        setState(() {
+          _vendedor = vendedorData;
+        });
+      }
+    }
 
     // Iniciar animaciones después de cargar
     _fadeController.forward();
@@ -621,11 +640,47 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
           width: double.infinity,
           height: 56,
           child: AnimatedElevatedButton(
-            onPressed: () {
-              // TODO: Implementar chat
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Función de chat próximamente')),
+            onPressed: () async {
+              if (_vendedor == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Cargando información del vendedor...'),
+                  ),
+                );
+                return;
+              }
+              
+              final authProvider = Provider.of<AuthProvider>(context, listen: false);
+              final comprador = authProvider.userProfile!;
+              
+              // Crear o obtener conversación
+              final conversacionId = await _chatService.crearOObtenerConversacion(
+                usuario1Id: comprador.id,
+                usuario1Nombre: comprador.nombreCompleto,
+                usuario2Id: _vendedor!.id,
+                usuario2Nombre: _vendedor!.nombreCompleto,
+                productoId: producto.id,
+                productoNombre: producto.titulo,
               );
+              
+              if (conversacionId != null) {
+                Navigator.pushNamed(
+                  context,
+                  '/chat',
+                  arguments: {
+                    'conversacionId': conversacionId,
+                    'otroUsuarioId': _vendedor!.id,
+                    'otroUsuarioNombre': _vendedor!.nombreCompleto,
+                  },
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Error al crear la conversación'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
             },
             backgroundColor: AppTheme.primaryGreen,
             child: const Row(
@@ -651,10 +706,23 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
           height: 56,
           child: AnimatedElevatedButton(
             onPressed: () {
-              // TODO: Implementar ofertas
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content: Text('Función de ofertas próximamente')),
+              if (_vendedor == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Cargando información del vendedor...'),
+                  ),
+                );
+                return;
+              }
+              
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => OfferScreen(
+                    producto: producto,
+                    vendedor: _vendedor!,
+                  ),
+                ),
               );
             },
             backgroundColor: AppTheme.accentOrange,

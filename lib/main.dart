@@ -24,6 +24,8 @@ import 'package:pina_app/screens/profile/settings_screen.dart';
 import 'package:pina_app/screens/legal/terms_and_conditions_screen.dart';
 import 'package:pina_app/screens/legal/privacy_policy_screen.dart';
 import 'package:pina_app/screens/help/help_screen.dart';
+import 'package:pina_app/screens/transactions/chat_screen.dart';
+import 'package:pina_app/screens/transactions/conversations_screen.dart';
 import 'package:pina_app/config/theme.dart';
 import 'package:pina_app/config/firebase_config.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -91,6 +93,8 @@ class MyApp extends StatelessWidget {
           '/terms': (context) => const TermsAndConditionsScreen(),
           '/privacy': (context) => const PrivacyPolicyScreen(),
           '/help': (context) => const HelpScreen(),
+          '/chat': (context) => const ChatScreen(),
+          '/conversations': (context) => const ConversationsScreen(),
         },
       ),
     );
